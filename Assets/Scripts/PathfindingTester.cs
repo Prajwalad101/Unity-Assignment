@@ -69,8 +69,13 @@ public class PathfindingTester : MonoBehaviour
 
   // Update is called once per frame
   void Update(){
+    var targetPosition = ConnectionArray[targetIndex].GetFromNode().transform.position;
+    targetPosition.y = 0;
+    float distanceToTarget = CalculateDistance(targetPosition);
+
+    
     // if object is back to initial position, don't update
-    if(targetIndex < 0){
+    if(targetIndex == 0 & distanceToTarget < 10f & reverse == true){
       anim.SetBool("Idle", true);
       return;
     }
@@ -81,14 +86,11 @@ public class PathfindingTester : MonoBehaviour
       isLastNode = true;
     }
     
-    var targetPosition = ConnectionArray[targetIndex].GetFromNode().transform.position;
-    targetPosition.y = 0;
     
-    float distanceToTarget = CalculateDistance(targetPosition);
    
     // move towards current node when distance is greater than 0.0001
     if( distanceToTarget > 0.0001f){
-        // delay  for idle seconds
+        // delay for idle seconds
         if(idle > 0){
           idle -= Time.deltaTime;
         }else{
@@ -111,6 +113,14 @@ public class PathfindingTester : MonoBehaviour
           isLastNode = false;
       }
       }
+
+      // if(distanceToTarget < 5f & isLastNode){
+      //   Debug.Log(isLastNode);
+      //     // start idle timer for 5 seconds
+      //     idle = 5;
+      //     anim.SetBool("Idle", true);
+      //     isLastNode = false;
+      // }
     }
 
     void MoveObject(Vector3 targetPosition){
