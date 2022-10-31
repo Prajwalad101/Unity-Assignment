@@ -16,12 +16,15 @@ public class PathfindingTester : MonoBehaviour
   Vector3 OffSet = new Vector3(0, 0.3f, 0);
 
   public float speed = 1.0f;
-
   private Transform target;
+  private Animator anim;
 
   // Start is called before the first frame update
   void Start(){
-    if (start == null || end == null){
+      GameObject gameObject = GameObject.FindGameObjectWithTag("Character");
+      anim = gameObject.GetComponent<Animator>();  
+      // anim.SetBool("Run", true);
+      if (start == null || end == null){
       Debug.Log("No start or end waypoints.");
       return;
     }
@@ -60,18 +63,22 @@ public class PathfindingTester : MonoBehaviour
   }
 
   bool reverse = false;
-  int targetIndex = 0;
+  private int targetIndex = 0;
+  private float idle;
+  private bool isLastNode = false;
 
   // Update is called once per frame
   void Update(){
     // if object is back to initial position, don't update
     if(targetIndex < 0){
+      anim.SetBool("Idle", true);
       return;
     }
 
-    // check if object is at the end node
+    // check if next node is the end node
     if(targetIndex == ConnectionArray.Count - 1){
       reverse = true;
+      isLastNode = true;
     }
     
     var targetPosition = ConnectionArray[targetIndex].GetFromNode().transform.position;
@@ -79,16 +86,30 @@ public class PathfindingTester : MonoBehaviour
     
     float distanceToTarget = CalculateDistance(targetPosition);
    
-    // move towards current node when distance is greater than 0.01
-    if( distanceToTarget > 0.001f){
-      MoveObject(targetPosition);
-      RotateObject(targetPosition);
-    } else{
-      if(reverse == false){
-          targetIndex++;
-        } else {
-          targetIndex--;
+    // move towards current node when distance is greater than 0.0001
+    if( distanceToTarget > 0.0001f){
+        // delay  for idle seconds
+        if(idle > 0){
+          idle -= Time.deltaTime;
+        }else{
+          anim.SetBool("Idle", false);
+          MoveObject(targetPosition);
+          RotateObject(targetPosition);
         }
+    } else{
+      // create a delay if last node is reached
+      if(reverse == true){
+          targetIndex--;
+        } else {
+          targetIndex++;
+        }
+
+        if(isLastNode){
+          // start idle timer for 5 seconds
+          idle = 5;
+          anim.SetBool("Idle", true);
+          isLastNode = false;
+      }
       }
     }
 
@@ -105,7 +126,7 @@ public class PathfindingTester : MonoBehaviour
 
     void RotateObject(Vector3 targetPosition){
       var currentPosition = transform.position;
-      float speed = 2f;
+      float speed = 3f;
       currentPosition.y = 0;
       
       if((targetPosition - currentPosition) != Vector3.zero){
