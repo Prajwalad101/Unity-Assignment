@@ -108,8 +108,10 @@ public class PathfindingTester : MonoBehaviour
       float speed = 2f;
       currentPosition.y = 0;
       
-      var targetRotation = Quaternion.LookRotation(targetPosition - currentPosition);
-      transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+      if((targetPosition - currentPosition) != Vector3.zero){
+        var targetRotation = Quaternion.LookRotation(targetPosition - currentPosition);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+      }
     }
     
     float CalculateDistance(Vector3 targetPosition){
