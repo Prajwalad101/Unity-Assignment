@@ -69,24 +69,21 @@ public class PathfindingTester : MonoBehaviour
 
   // Update is called once per frame
   void Update(){
-    var targetPosition = ConnectionArray[targetIndex].GetFromNode().transform.position;
-    targetPosition.y = 0;
-    float distanceToTarget = CalculateDistance(targetPosition);
-
-    
-    // if object is back to initial position, don't update
-    if(targetIndex == 0 & distanceToTarget < 10f & reverse == true){
+    if(targetIndex < 0){
       anim.SetBool("Idle", true);
+      StartCoroutine(PlaceParcel(1));
       return;
     }
+    
+    var targetPosition = ConnectionArray[targetIndex].GetFromNode().transform.position;
+    targetPosition.y = 0;
+    float distanceToTarget = CalculateDistance(targetPosition);    
 
     // check if next node is the end node
     if(targetIndex == ConnectionArray.Count - 1){
       reverse = true;
       isLastNode = true;
     }
-    
-    
    
     // move towards current node when distance is greater than 0.0001
     if( distanceToTarget > 0.0001f){
@@ -107,22 +104,16 @@ public class PathfindingTester : MonoBehaviour
         }
 
         if(isLastNode){
-          // start idle timer for 5 seconds
-          idle = 5;
+          // start idle timer for 2 seconds
+          idle = 2;
           anim.SetBool("Idle", true);
+          StartCoroutine(PickParcel(1));
           isLastNode = false;
       }
       }
-
-      // if(distanceToTarget < 5f & isLastNode){
-      //   Debug.Log(isLastNode);
-      //     // start idle timer for 5 seconds
-      //     idle = 5;
-      //     anim.SetBool("Idle", true);
-      //     isLastNode = false;
-      // }
     }
 
+    // moves object towards targetPosition
     void MoveObject(Vector3 targetPosition){
       var step =  speed * Time.deltaTime;
 
@@ -134,6 +125,7 @@ public class PathfindingTester : MonoBehaviour
       transform.position = newPosition;
     }
 
+    // slowly rotates current object towards targetPosition
     void RotateObject(Vector3 targetPosition){
       var currentPosition = transform.position;
       float speed = 3f;
@@ -145,10 +137,35 @@ public class PathfindingTester : MonoBehaviour
       }
     }
     
+    // calculates distance between current object to targetPosition
     float CalculateDistance(Vector3 targetPosition){
        var vectorToTarget = transform.position - targetPosition;
        vectorToTarget.y = 0;
        return vectorToTarget.magnitude;
+    }
+
+    IEnumerator PickParcel(int secs){
+      yield return new WaitForSeconds(secs);
+      GameObject parcelObj = GameObject.FindGameObjectWithTag("Parcel");
+
+      // disable renderer to make object invisible
+      Renderer renderer = parcelObj.GetComponent<MeshRenderer>();
+      renderer.enabled = false;
+      }
+
+    IEnumerator PlaceParcel(int secs){
+      yield return new WaitForSeconds(secs);
+      Vector3 targetPosition = ConnectionArray[0].GetFromNode().transform.position;
+      GameObject parcelObj = GameObject.FindGameObjectWithTag("Parcel");
+      
+      // modify position of the parcel near the  starting node
+      Vector3 placePosition = new Vector3(targetPosition.x + 0.5f, 0, targetPosition.z + 0.5f);
+      placePosition.y = Terrain.activeTerrain.SampleHeight(transform.position);
+      parcelObj.transform.position = placePosition;
+      
+      // enable renderer to make object visible
+      Renderer renderer = parcelObj.GetComponent<MeshRenderer>();
+      renderer.enabled = true;
     }
 }
 
