@@ -9,6 +9,7 @@ public class PathfindingTester : MonoBehaviour
   List<GameObject> Waypoints = new List<GameObject>();
   // Array of waypoint map connections. Represents a path.
   List<Connection> ConnectionArray = new List<Connection>();
+  List<GameObject> SelectedNodes = new List<GameObject>();
   // The start and end target point.
   public GameObject start;
   public GameObject end;
@@ -51,6 +52,11 @@ public class PathfindingTester : MonoBehaviour
     }
     // Run A Star...
     ConnectionArray = AStarManager.PathfindAStar(start, end);
+
+    foreach (var connection in ConnectionArray){
+      SelectedNodes.Add(connection.GetFromNode());
+    }
+    SelectedNodes.Add(end);
   }
   // Draws debug objects in the editor and during editor play (if option set).
   void OnDrawGizmos(){
@@ -75,12 +81,12 @@ public class PathfindingTester : MonoBehaviour
       return;
     }
     
-    var targetPosition = ConnectionArray[targetIndex].GetFromNode().transform.position;
+    var targetPosition = SelectedNodes[targetIndex].transform.position;
     targetPosition.y = 0;
     float distanceToTarget = CalculateDistance(targetPosition);    
 
     // check if next node is the end node
-    if(targetIndex == ConnectionArray.Count - 1){
+    if(targetIndex == SelectedNodes.Count - 1){
       reverse = true;
       isLastNode = true;
     }
@@ -155,7 +161,7 @@ public class PathfindingTester : MonoBehaviour
 
     IEnumerator PlaceParcel(int secs){
       yield return new WaitForSeconds(secs);
-      Vector3 targetPosition = ConnectionArray[0].GetFromNode().transform.position;
+      Vector3 targetPosition = SelectedNodes[0].transform.position;
       GameObject parcelObj = GameObject.FindGameObjectWithTag("Parcel");
       
       // modify position of the parcel near the  starting node
